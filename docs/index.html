@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dictly — private voice dictation for Mac</title>
+<meta name="description" content="Hold a key, talk, release — your words are typed in any app. Free, open-source dictation that runs entirely on your Mac.">
+<meta property="og:title" content="Dictly — private voice dictation for Mac">
+<meta property="og:description" content="Free, open-source voice dictation that runs entirely on your Mac. Works in every app.">
+<meta property="og:image" content="assets/dashboard-light.png">
+<link rel="icon" href="assets/favicon.png">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f1ee; --border: #e5e4e0;
+    --text: #0d0d0c; --text-2: #4f4e4a; --muted: #8a8984;
+    --accent: #2a78d6; --accent-2: #1f5fc2; --accent-soft: #e8f0fb; --good: #0f8a4a;
+    --pill: #141413; --pill-ink: #f5f5f4;
+    --radius: 14px; --shadow: 0 1px 2px rgb(0 0 0 / .05), 0 8px 30px rgb(0 0 0 / .06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0f0f0e; --surface: #171716; --surface-2: #20201e; --border: #2c2c29;
+      --text: #f0efec; --text-2: #c3c2b7; --muted: #8d8c85;
+      --accent: #3d8bf0; --accent-2: #5b9df2; --accent-soft: #16263b; --good: #3fbf7a;
+      --pill: #2e2e2b; --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 8px 30px rgb(0 0 0 / .35);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  code, kbd, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  kbd { font-size: .85em; background: var(--surface-2); border: 1px solid var(--border); border-bottom-width: 2px;
+        border-radius: 6px; padding: 1px 6px; }
+
+  /* nav */
+  nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 85%, transparent);
+        backdrop-filter: saturate(1.5) blur(12px); border-bottom: 1px solid var(--border); }
+  nav .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--text); }
+  .logo img { width: 28px; height: 28px; }
+  nav .links { margin-left: auto; display: flex; gap: 22px; align-items: center; font-size: 15px; }
+  nav .links a { color: var(--text-2); }
+  nav .links a.btn { color: #fff; }
+  @media (max-width: 640px) { nav .links a:not(.btn) { display: none; } }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 10px; font-weight: 600;
+         font-size: 15px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+  .btn:hover { text-decoration: none; background: var(--surface-2); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: var(--accent-2); }
+  .btn.sm { padding: 7px 14px; font-size: 14px; }
+
+  /* hero */
+  .hero { padding: 72px 0 40px; text-align: center; }
+  .badge { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--text-2);
+           background: var(--surface-2); border: 1px solid var(--border); padding: 4px 12px; border-radius: 999px; }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
+  h1 { font-size: clamp(40px, 7vw, 72px); line-height: 1.04; letter-spacing: -0.035em; margin: 20px 0 18px; }
+  h1 .soft { color: var(--muted); }
+  .lead { font-size: clamp(17px, 2.2vw, 20px); color: var(--text-2); max-width: 640px; margin: 0 auto 30px; }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .fine { margin-top: 14px; font-size: 13px; color: var(--muted); }
+
+  /* demo */
+  .demo { margin: 56px auto 0; max-width: 760px; background: var(--surface); border: 1px solid var(--border);
+          border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; text-align: left; }
+  .demo .bar { display: flex; gap: 7px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .demo .bar i { width: 11px; height: 11px; border-radius: 50%; background: var(--border); }
+  .demo .bar span { margin-left: 10px; font-size: 13px; color: var(--muted); }
+  .demo .body { position: relative; padding: 26px 28px 88px; min-height: 230px; font-size: 18px; }
+  .demo .to { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+  .demo .typed { white-space: pre-wrap; }
+  .demo .caret { display: inline-block; width: 2px; height: 1.15em; vertical-align: -0.2em; background: var(--accent);
+                 animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .demo .pill { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); height: 36px; border-radius: 18px;
+                background: var(--pill); display: flex; align-items: center; justify-content: center; gap: 3px;
+                transition: width .25s ease; width: 46px; box-shadow: 0 4px 14px rgb(0 0 0 / .2); }
+  .demo .pill.idle { height: 8px; width: 44px; opacity: .55; }
+  .demo .pill.idle b { display: none; }
+  @media (prefers-color-scheme: dark) { .demo .pill { border: 1px solid #3a3a37; } }
+  .demo .pill b { width: 3px; border-radius: 2px; background: var(--pill-ink); height: 4px; transition: height .08s; }
+  .demo .pill .dots { display: none; gap: 6px; }
+  .demo .pill.thinking .dots { display: flex; }
+  .demo .pill.thinking b { display: none; }
+  .demo .pill .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--pill-ink); animation: pulse 1s infinite; }
+  .demo .pill .dots i:nth-child(2) { animation-delay: .15s; } .demo .pill .dots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes pulse { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+  .demo .hint { position: absolute; right: 18px; bottom: 28px; font-size: 13px; color: var(--muted); }
+  @media (max-width: 560px) { .demo .hint { display: none; } .demo .body { font-size: 16px; padding: 20px 18px 80px; } }
+
+  /* sections */
+  section { padding: 84px 0; }
+  section.alt { background: var(--surface-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.025em; line-height: 1.15; margin: 0 0 12px; }
+  .sub { color: var(--text-2); font-size: 18px; max-width: 620px; margin: 0 0 40px; }
+  .center { text-align: center; } .center .sub { margin-left: auto; margin-right: auto; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 880px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+  .card .ico { width: 38px; height: 38px; border-radius: 10px; background: var(--accent-soft); color: var(--accent);
+               display: grid; place-items: center; margin-bottom: 14px; }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .card p { margin: 0; color: var(--text-2); font-size: 15px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: s; }
+  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+  .step { padding: 22px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); }
+  .step::before { counter-increment: s; content: counter(s); display: inline-grid; place-items: center; width: 28px; height: 28px;
+                  border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; margin-bottom: 12px; }
+  .step h3 { margin: 0 0 6px; font-size: 17px; } .step p { margin: 0; color: var(--text-2); font-size: 15px; }
+
+  .shot { border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); width: 100%; display: block; }
+  .shot.dark { display: none; }
+  @media (prefers-color-scheme: dark) { .shot.light { display: none; } .shot.dark { display: block; } }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; gap: 28px; } }
+  .checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .checks li { display: flex; gap: 10px; color: var(--text-2); }
+  .checks li::before { content: ""; flex: none; width: 20px; height: 20px; margin-top: 3px; border-radius: 50%;
+                       background: var(--accent-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 10.5l2.5 2.5L14 7.5' fill='none' stroke='%232a78d6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat; }
+  .checks b { color: var(--text); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 15px; background: var(--surface); border-radius: var(--radius);
+          overflow: hidden; border: 1px solid var(--border); }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; background: var(--surface-2); }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+  pre { background: var(--pill); color: #e9e9e6; padding: 18px 20px; border-radius: var(--radius); overflow-x: auto;
+        font-size: 14px; line-height: 1.7; margin: 0; }
+  pre .c { color: #8d8c85; }
+  .req { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+  .req span { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--text-2); }
+
+  details { border-bottom: 1px solid var(--border); padding: 16px 0; }
+  details summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  details summary::after { content: "+"; color: var(--muted); font-weight: 400; font-size: 20px; line-height: 1; }
+  details[open] summary::after { content: "–"; }
+  details p { color: var(--text-2); margin: 10px 0 0; }
+
+  footer { padding: 40px 0 56px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; gap: 16px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#"><img src="assets/icon.png" alt="">Dictly</a>
+    <div class="links">
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#install">Install</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn primary sm" href="https://github.com/Saisharan1902/dictly">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="badge"><span class="dot"></span>Free &amp; open source · runs 100% on your Mac</span>
+    <h1>Speak. <span class="soft">It types.</span></h1>
+    <p class="lead">Hold a key, say what you want to write, let go — and clean, punctuated text appears wherever your cursor is. In Slack, Mail, ChatGPT, VS Code, anywhere.</p>
+    <div class="cta">
+      <a class="btn primary" href="#install">Install Dictly</a>
+      <a class="btn" href="https://github.com/Saisharan1902/dictly">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View source</a>
+    </div>
+    <p class="fine">macOS 13+ · Apple Silicon · No account, no subscription</p>
+
+    <div class="demo" aria-label="Animated demo: a spoken sentence being cleaned up and typed into a message">
+      <div class="bar"><i></i><i></i><i></i><span>Message to Priya</span></div>
+      <div class="body">
+        <div class="to" id="said">You say: …</div>
+        <span class="typed" id="typed"></span><span class="caret"></span>
+        <div class="pill idle" id="pill"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b>
+          <span class="dots"><i></i><i></i><i></i></span></div>
+        <div class="hint">hold <kbd>right ⌥</kbd></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <h2>Everything you need to stop typing</h2>
+    <p class="sub">Built for people who think faster than they type — and don't want their voice in someone else's cloud.</p>
+    <div class="grid">
+      <div class="card"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
+        <h3>Private by default</h3><p>Speech recognition runs on your Mac's GPU. Your voice is never uploaded, and never saved unless you ask.</p></div>
+      <div class="card"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
+        <h3>Fast</h3><p>Text appears about half a second after you let go. Models stay warm so the first dictation of the day is quick too.</p></div>
+      <div class="card"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></div>
+        <h3>Works in every app</h3><p>Anywhere you can type: Slack, Gmail, Notes, ChatGPT, Claude, VS Code, Terminal. No plugins.</p></div>
+      <div class="card"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z"/></svg></div>
+        <h3>AI cleanup</h3><p>Removes “um”s, keeps only what you meant after “no wait…”, formats spoken lists. Local model or your own API key.</p></div>
+      <div class="card"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5z"/><path d="M8 7h8M8 11h6"/></svg></div>
+        <h3>Your words, your spelling</h3><p>Teach it names and jargon. Set replacements: say “my email”, get your address.</p></div>
+      <div class="card"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+        <h3>A dashboard of your voice</h3><p>Words per day, speaking speed, time saved, searchable history — all stored locally.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap center">
+    <h2>How it works</h2>
+    <p class="sub">No windows to open, no buttons to click.</p>
+    <div class="steps" style="text-align:left">
+      <div class="step"><h3>Hold the key</h3><p>Hold <kbd>Right ⌥</kbd> (or Fn, Right ⌘…). A small pill at the bottom of the screen shows it's listening. Double-tap for hands-free.</p></div>
+      <div class="step"><h3>Talk naturally</h3><p>Ramble, pause, correct yourself. “Let's meet Tuesday — no wait, Wednesday.”</p></div>
+      <div class="step"><h3>Let go</h3><p>Clean text is typed where your cursor is: “Let's meet Wednesday.” Your clipboard is left untouched.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <h2>See how much you say</h2>
+        <p class="sub" style="margin-bottom:24px">The built-in dashboard tracks your words, speed and the time you've saved compared to typing — and keeps a searchable history of everything you've dictated.</p>
+        <ul class="checks">
+          <li><span><b>Stats</b> — words today, total words, speaking WPM, streaks</span></li>
+          <li><span><b>History</b> — search, copy, compare raw vs cleaned text</span></li>
+          <li><span><b>Settings</b> — hotkey, speech model, AI provider, all in one place</span></li>
+        </ul>
+      </div>
+      <div>
+        <img class="shot light" src="assets/dashboard-light.png" alt="Dictly dashboard showing words per day, speaking speed and top apps" loading="lazy">
+        <img class="shot dark" src="assets/dashboard-dark.png" alt="Dictly dashboard in dark mode" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="privacy">
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <h2>Your voice stays on your Mac</h2>
+        <p class="sub" style="margin-bottom:0">Most dictation apps send every word you say to a server. Dictly doesn't have one.</p>
+      </div>
+      <ul class="checks">
+        <li><span><b>On-device speech recognition</b> with open-source models (NVIDIA Parakeet, OpenAI Whisper) via Apple's MLX.</span></li>
+        <li><span><b>Audio is never written to disk</b> unless you turn on recordings for playback.</span></li>
+        <li><span><b>AI cleanup can be local too</b> — run a free model with Ollama, or bring your own API key. Off by default.</span></li>
+        <li><span><b>The dashboard only listens on your Mac</b> (127.0.0.1) and blocks requests from websites.</span></li>
+        <li><span><b>Open source</b> — read every line, or build it yourself.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Measured, not promised</h2>
+    <p class="sub">Time from releasing the key to text appearing, on a MacBook Pro M4.</p>
+    <table>
+      <thead><tr><th>Dictation</th><th>Speech → text</th><th>AI cleanup</th><th>Typed after</th></tr></thead>
+      <tbody>
+        <tr><td>5 s, clean speech</td><td class="num">0.18 s</td><td class="num">skipped</td><td class="num"><b>≈ 0.5 s</b></td></tr>
+        <tr><td>5 s, with “um”s and corrections</td><td class="num">0.18 s</td><td class="num">0.6 s</td><td class="num"><b>1.1 s</b></td></tr>
+        <tr><td>30 s, with “um”s and corrections</td><td class="num">0.74 s</td><td class="num">2.8 s</td><td class="num"><b>3.9 s</b></td></tr>
+      </tbody>
+    </table>
+    <p class="note">Parakeet TDT 0.6B for speech, Llama 3.2 3B via Ollama for cleanup, “smart” mode (AI only runs when there's something to fix). Includes 0.3 s of extra listening after release so your last word isn't cut off.</p>
+  </div>
+</section>
+
+<section class="alt" id="install">
+  <div class="wrap">
+    <h2>Install</h2>
+    <p class="sub" style="margin-bottom:18px">Dictly is currently installed from source — it takes about five minutes.</p>
+    <div class="req"><span>macOS 13 or later</span><span>Apple Silicon (M1–M4)</span><span>Python 3.12 (Homebrew)</span><span>~4 GB disk for models</span></div>
+<pre><span class="c"># 1. Get the code and set it up (downloads the speech model on first run)</span>
+git clone https://github.com/Saisharan1902/dictly.git
+cd dictly
+./run.sh
+
+<span class="c"># 2. Optional: install it as a menu-bar app in /Applications</span>
+scripts/build_app.sh
+
+<span class="c"># 3. Optional: free local AI cleanup</span>
+brew install ollama && brew services start ollama
+ollama pull llama3.2:3b</pre>
+    <p class="note">On first launch, allow Dictly under System Settings → Privacy &amp; Security → <b>Microphone</b>, <b>Input Monitoring</b> (to see the hotkey) and <b>Accessibility</b> (to type into other apps), then reopen it.</p>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap" style="max-width:760px">
+    <h2 class="center" style="margin-bottom:24px">Questions</h2>
+    <details><summary>Is it really free?</summary><p>Yes. Dictly is open source. There is no account and nothing to pay. If you choose a cloud AI provider for cleanup, that provider bills you directly for what you use.</p></details>
+    <details><summary>Does it work offline?</summary><p>Yes. After the models are downloaded once, speech recognition and local AI cleanup work with no internet connection.</p></details>
+    <details><summary>Which languages does it support?</summary><p>The default Parakeet model is English-only and the fastest. Switch to Whisper Large v3 Turbo in Settings for Hindi, Telugu, Tamil, Spanish, French, German, Japanese, Chinese and many more.</p></details>
+    <details><summary>Why does it need Accessibility and Input Monitoring?</summary><p>Input Monitoring lets Dictly notice when you hold the dictation key; Accessibility lets it press ⌘V to type into the app you're using. It only watches for its own key and Esc — it doesn't record your typing.</p></details>
+    <details><summary>Does it work on Intel Macs?</summary><p>Not yet. The speech models run on Apple Silicon's GPU through MLX.</p></details>
+    <details><summary>How is this different from macOS dictation?</summary><p>Dictly works the same way in every app, cleans up fillers and self-corrections, learns your vocabulary, lets you pick the model, and keeps a searchable history and stats — all locally.</p></details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="logo" style="font-size:15px"><img src="assets/icon.png" alt="" style="width:22px;height:22px">Dictly</span>
+    <span>Apache-2.0 open source · <a href="https://github.com/Saisharan1902/dictly">GitHub</a> · <a href="https://github.com/Saisharan1902/dictly/issues">Report an issue</a></span>
+  </div>
+</footer>
+
+<script>
+// Hero demo: listening → thinking → text typed, on a loop.
+const said = [
+  ["um so i think we should uh meet on tuesday no wait wednesday at like 3", "I think we should meet on Wednesday at 3."],
+  ["hey can you send me the deck before the standup tomorrow thanks", "Hey, can you send me the deck before the standup tomorrow? Thanks!"],
+  ["okay so three things first fix the login bug second update the docs and third ship it",
+   "Three things:\n1. Fix the login bug\n2. Update the docs\n3. Ship it"],
+];
+const pill = document.getElementById("pill"), bars = [...pill.querySelectorAll("b")];
+const typed = document.getElementById("typed"), saidEl = document.getElementById("said");
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+async function run(i = 0) {
+  const [raw, clean] = said[i % said.length];
+  typed.textContent = ""; saidEl.textContent = "You say: “" + raw + "”";
+  if (reduce) { typed.textContent = clean; return; }
+  pill.className = "pill"; pill.style.width = "132px";
+  const t0 = Date.now();
+  while (Date.now() - t0 < 2600) {
+    bars.forEach((b) => (b.style.height = 4 + Math.random() * 20 + "px"));
+    await wait(90);
+  }
+  pill.className = "pill thinking"; pill.style.width = "84px"; await wait(700);
+  pill.className = "pill idle"; pill.style.width = "";
+  for (const ch of clean) { typed.textContent += ch; await wait(12); }
+  await wait(2600);
+  run(i + 1);
+}
+run();
+</script>
+</body>
+</html>

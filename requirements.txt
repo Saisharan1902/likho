@@ -1,0 +1,9 @@
+anthropic==2.3.0
+mlx-whisper==0.4.3
+numpy==2.5.4
+parakeet-mlx==0.5.3
+pyobjc-framework-Cocoa==12.2.2
+pyobjc-framework-Quartz==12.2.2
+PySide6==6.12.0
+pytest==9.2.0
+sounddevice==0.5.6
