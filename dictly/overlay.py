@@ -141,10 +141,15 @@ def _tray_icon() -> QIcon:
     pm.fill(Qt.transparent)
     p = QPainter(pm)
     p.setRenderHint(QPainter.Antialiasing)
+    # the Dictly "d": ring + stem, with a tiny waveform in the bowl
+    p.setPen(QPen(Qt.black, 4.2, Qt.SolidLine, Qt.RoundCap))
+    p.setBrush(Qt.NoBrush)
+    p.drawEllipse(QRectF(5, 13, 19, 19))
+    p.drawLine(QRectF(26, 4, 0, 28).topLeft(), QRectF(26, 4, 0, 28).bottomLeft())
     p.setPen(Qt.NoPen)
     p.setBrush(Qt.black)
-    for i, bh in enumerate((10, 20, 28, 20, 10)):  # little waveform glyph
-        p.drawRoundedRect(QRectF(4 + i * 6, 18 - bh / 2, 4, bh), 2, 2)
+    for i, bh in enumerate((4, 8, 5)):
+        p.drawRoundedRect(QRectF(10.5 + i * 3.3, 22.5 - bh / 2, 2, bh), 1, 1)
     p.end()
     icon = QIcon(pm)
     icon.setIsMask(True)  # macOS tints it for light/dark menu bar
