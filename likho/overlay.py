@@ -141,7 +141,7 @@ def _tray_icon() -> QIcon:
     pm.fill(Qt.transparent)
     p = QPainter(pm)
     p.setRenderHint(QPainter.Antialiasing)
-    # the Dictly "d": ring + stem, with a tiny waveform in the bowl
+    # the Likho "d": ring + stem, with a tiny waveform in the bowl
     p.setPen(QPen(Qt.black, 4.2, Qt.SolidLine, Qt.RoundCap))
     p.setBrush(Qt.NoBrush)
     p.drawEllipse(QRectF(5, 13, 19, 19))
@@ -169,9 +169,9 @@ def make_tray(on_open_dashboard, on_toggle_ai, ai_enabled, on_quit, on_open_brow
     ai.toggled.connect(on_toggle_ai)
     menu.addAction(ai)
     menu.addSeparator()
-    menu.addAction("Quit Dictly", on_quit)
+    menu.addAction("Quit Likho", on_quit)
     tray.setContextMenu(menu)
-    tray.setToolTip("Dictly — local dictation")
+    tray.setToolTip("Likho — local dictation")
     tray.status_action, tray.ai_action, tray.menu_ = status, ai, menu  # keep references alive
     tray.show()
     return tray

@@ -17,9 +17,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from dictly.audio import SAMPLE_RATE, Recorder, load_wav, prepare, save_wav  # noqa: E402
-from dictly.config import DATA_DIR, Config  # noqa: E402
-from dictly.transcriber import MODELS, transcribe, warm_up  # noqa: E402
+from likho.audio import SAMPLE_RATE, Recorder, load_wav, prepare, save_wav  # noqa: E402
+from likho.config import DATA_DIR, Config  # noqa: E402
+from likho.transcriber import MODELS, transcribe, warm_up  # noqa: E402
 
 BENCH = DATA_DIR / "bench"
 SENTENCES = [

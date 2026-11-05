@@ -5,8 +5,8 @@ import time
 import numpy as np
 import pytest
 
-from dictly.audio import SAMPLE_RATE, Recorder, load_wav, prepare
-from dictly.transcriber import fix_dictionary, transcribe
+from likho.audio import SAMPLE_RATE, Recorder, load_wav, prepare
+from likho.transcriber import fix_dictionary, transcribe
 
 
 def tone(seconds, amp=0.3):

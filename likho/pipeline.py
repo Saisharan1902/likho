@@ -13,12 +13,16 @@ from .transcriber import apply_replacements, transcribe
 MIN_SECONDS = 0.4  # shorter = accidental tap, ignore it
 
 
+def log(msg):
+    """Diagnostics for ~/Library/Logs/Likho.log — counts and timings only, never what you said."""
+    print(f"[dictation] {time.strftime('%H:%M:%S')} {msg}", flush=True)
+
+
 def default_output(text, mode):
     from . import macos
-    if mode == "copy":
-        macos.copy_to_clipboard(text)
-    else:
-        macos.paste_text(text + " ")  # trailing space so back-to-back dictations don't run together
+    how = macos.insert_text(text + " " if mode != "copy" else text, mode)  # trailing space between dictations
+    log(f"inserted via {how}")
+    return how != "blocked"
 
 
 class Pipeline:
@@ -35,6 +39,8 @@ class Pipeline:
         duration = len(audio) / SAMPLE_RATE
         speech = prepare(audio) if duration >= MIN_SECONDS else None
         if speech is None:
+            reason = "too short" if duration < MIN_SECONDS else "no speech detected"
+            log(f"dropped {duration:.1f}s recording: {reason}")
             self.on_state(IDLE)  # accidental tap or no speech — don't let the model invent words
             return None
         self.on_state(TRANSCRIBING)
@@ -44,8 +50,11 @@ class Pipeline:
             raw = transcribe(speech, cfg["model"], cfg["language"], cfg["dictionary"])
             transcribe_sec = time.monotonic() - t0
             if not raw:
+                log(f"dropped {duration:.1f}s recording: model heard no words")
                 self.on_state(IDLE)  # silence
                 return None
+            log(f"{duration:.1f}s audio ({len(speech) / SAMPLE_RATE:.1f}s after trimming) → "
+                f"{len(raw.split())} words in {transcribe_sec:.2f}s, app={app_name!r}")
 
             text = apply_replacements(raw, cfg["replacements"])
             ai_used, ai_sec = False, None
@@ -60,7 +69,7 @@ class Pipeline:
                     self.on_status(error=f"AI cleanup failed ({type(e).__name__}) — typed raw text")
                 ai_sec = round(time.monotonic() - t1, 2)
 
-            self.output(text, cfg["paste_mode"])
+            pasted = self.output(text, cfg["paste_mode"]) is not False
             total_sec = round(time.monotonic() - released_at, 2)
             row_id = self.db.add(raw_text=raw, final_text=text, duration_sec=round(duration, 2),
                                  transcribe_sec=round(transcribe_sec, 2), word_count=len(text.split()),
@@ -70,7 +79,12 @@ class Pipeline:
                 path = config.AUDIO_DIR / f"{row_id}.wav"
                 save_wav(path, audio)
                 self.db.set_audio(row_id, str(path))
-            self.on_state(DONE)
+            if not pasted:  # Accessibility is off: the text is on the clipboard instead
+                self.on_status(error="Can't type into apps — turn on Accessibility for Likho. "
+                                     "Your text was copied: press ⌘V")
+                self.on_state(ERROR)
+            else:
+                self.on_state(DONE)
             return self.db.get(row_id)
         except Exception:
             traceback.print_exc()

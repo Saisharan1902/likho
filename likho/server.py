@@ -1,7 +1,7 @@
 """Local dashboard: a tiny JSON API + the single-page UI in dashboard/index.html.
 
 Security: binds to 127.0.0.1 only, rejects foreign Host headers (DNS rebinding) and requires an
-X-Dictly header on every write, which a random website can't send cross-origin. Otherwise any page
+X-Likho header on every write, which a random website can't send cross-origin. Otherwise any page
 you visit could quietly change your settings (e.g. point AI cleanup at its own server).
 """
 import json
@@ -58,8 +58,8 @@ class DashboardServer:
             raise ValueError("ai_mode must be smart or always")
         if "ai_provider" in changes and changes["ai_provider"] not in llm.PROVIDERS:
             raise ValueError("unknown AI provider")
-        if "paste_mode" in changes and changes["paste_mode"] not in ("paste", "copy"):
-            raise ValueError("paste_mode must be paste or copy")
+        if "paste_mode" in changes and changes["paste_mode"] not in ("paste", "type", "copy"):
+            raise ValueError("paste_mode must be paste, type or copy")
         self.cfg.update(changes)
         return self.public_settings()
 
@@ -111,8 +111,8 @@ class DashboardServer:
                 if host not in ("127.0.0.1", "localhost"):
                     self._send(403, {"error": "forbidden host"})
                     return False
-                if write and self.headers.get("X-Dictly") != "1":
-                    self._send(403, {"error": "missing X-Dictly header"})
+                if write and self.headers.get("X-Likho") != "1":
+                    self._send(403, {"error": "missing X-Likho header"})
                     return False
                 return True
 
@@ -154,7 +154,7 @@ class DashboardServer:
                         return self._send(200, server.save_settings(body))
                     if self.path == "/api/test-ai":
                         return self._send(200, server.test_ai(body))
-                    if self.path == "/api/show":  # Dictly.app was clicked while already running
+                    if self.path == "/api/show":  # Likho.app was clicked while already running
                         server.on_show()
                         return self._send(200, {"ok": True})
                 except (ValueError, json.JSONDecodeError) as e:

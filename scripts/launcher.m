@@ -1,10 +1,10 @@
-// Dictly.app's main executable: a tiny Cocoa app that runs the Python app as its CHILD.
+// Likho.app's main executable: a tiny Cocoa app that runs the Python app as its CHILD.
 //
 // Why a child (not exec): macOS attributes a child's privacy permissions (Microphone, Input
-// Monitoring, Accessibility) to the parent app, so they're checked against "Dictly". exec'ing Python
+// Monitoring, Accessibility) to the parent app, so they're checked against "Likho". exec'ing Python
 // would make macOS check "python3.12" instead.
 //
-// Why Cocoa: clicking Dictly in Finder/Spotlight while it's running sends a "reopen" event; we
+// Why Cocoa: clicking Likho in Finder/Spotlight while it's running sends a "reopen" event; we
 // answer it by asking the Python app to show the dashboard (POST /api/show on the local server).
 //
 // Built by scripts/build_app.sh with -DPROJECT="..." -DPYTHON="...".
@@ -33,26 +33,26 @@ extern char **environ;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)note {
-    NSString *log = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Logs/Dictly.log"];
+    NSString *log = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Logs/Likho.log"];
     if (chdir(PROJECT) != 0) {
-        [self fail:@"Can't find the Dictly project folder. Rebuild the app with scripts/build_app.sh."];
+        [self fail:@"Can't find the Likho project folder. Rebuild the app with scripts/build_app.sh."];
         return;
     }
-    setenv("DICTLY_LAUNCHER", "1", 1);
-    if (!_atLogin) setenv("DICTLY_SHOW_DASHBOARD", "1", 1);
+    setenv("LIKHO_LAUNCHER", "1", 1);
+    if (!_atLogin) setenv("LIKHO_SHOW_DASHBOARD", "1", 1);
 
     posix_spawn_file_actions_t files;
     posix_spawn_file_actions_init(&files);
     posix_spawn_file_actions_addopen(&files, STDOUT_FILENO, log.fileSystemRepresentation,
                                      O_WRONLY | O_CREAT | O_APPEND, 0644);
     posix_spawn_file_actions_adddup2(&files, STDOUT_FILENO, STDERR_FILENO);
-    char *argv[] = {PYTHON, "-m", "dictly", NULL};
+    char *argv[] = {PYTHON, "-m", "likho", NULL};
     if (posix_spawn(&_child, PYTHON, &files, NULL, argv, environ) != 0) {
         [self fail:@"Can't start Python. Run ./run.sh once in the project folder, then try again."];
         return;
     }
 
-    // When the Python app exits (Quit Dictly from the menu bar), quit the launcher too.
+    // When the Python app exits (Quit Likho from the menu bar), quit the launcher too.
     _exitWatch = dispatch_source_create(DISPATCH_SOURCE_TYPE_PROC, _child, DISPATCH_PROC_EXIT,
                                         dispatch_get_main_queue());
     dispatch_source_set_event_handler(_exitWatch, ^{
@@ -74,11 +74,11 @@ extern char **environ;
         NSRunningApplication *py = [NSRunningApplication runningApplicationWithProcessIdentifier:_child];
         if (py) [NSApp yieldActivationToApplication:py];  // let the Python app bring its window forward
     }
-    const char *port = getenv("DICTLY_PORT");
+    const char *port = getenv("LIKHO_PORT");
     NSString *url = [NSString stringWithFormat:@"http://127.0.0.1:%s/api/show", port ? port : "8765"];
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
     req.HTTPMethod = @"POST";
-    [req setValue:@"1" forHTTPHeaderField:@"X-Dictly"];
+    [req setValue:@"1" forHTTPHeaderField:@"X-Likho"];
     [[[NSURLSession sharedSession] dataTaskWithRequest:req] resume];
 }
 
@@ -88,7 +88,7 @@ extern char **environ;
 
 - (void)fail:(NSString *)message {
     NSAlert *alert = [NSAlert new];
-    alert.messageText = @"Dictly couldn't start";
+    alert.messageText = @"Likho couldn't start";
     alert.informativeText = message;
     [NSApp activateIgnoringOtherApps:YES];
     [alert runModal];

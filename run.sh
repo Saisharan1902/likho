@@ -1,9 +1,9 @@
 #!/bin/zsh
-# Start Dictly. First run creates the virtualenv and installs dependencies.
+# Start Likho. First run creates the virtualenv and installs dependencies.
 set -e
 cd "$(dirname "$0")"
 if [ "$(uname -m)" != "arm64" ]; then
-  echo "Dictly needs an Apple Silicon Mac (M1 or later)."; exit 1
+  echo "Likho needs an Apple Silicon Mac (M1 or later)."; exit 1
 fi
 if [ ! -d .venv ]; then
   if ! command -v python3.12 >/dev/null; then
@@ -14,4 +14,4 @@ if [ ! -d .venv ]; then
   .venv/bin/pip install -q --upgrade pip
   .venv/bin/pip install -q -r requirements.txt
 fi
-exec .venv/bin/python -m dictly
+exec .venv/bin/python -m likho

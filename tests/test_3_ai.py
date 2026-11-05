@@ -3,8 +3,8 @@ import types
 
 import pytest
 
-from dictly import llm
-from dictly.config import DEFAULTS
+from likho import llm
+from likho.config import DEFAULTS
 
 RAW = "um so can you send me the uh report by friday no wait thursday"
 

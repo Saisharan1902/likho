@@ -4,7 +4,7 @@ import os
 import threading
 from pathlib import Path
 
-DATA_DIR = Path(os.environ.get("DICTLY_DATA_DIR") or Path(__file__).resolve().parent.parent / "data")
+DATA_DIR = Path(os.environ.get("LIKHO_DATA_DIR") or Path(__file__).resolve().parent.parent / "data")
 AUDIO_DIR = DATA_DIR / "audio"
 SETTINGS_PATH = DATA_DIR / "settings.json"
 
@@ -30,7 +30,7 @@ DEFAULTS = {
     "language": "en",  # "" = auto-detect
     # Off: the mic opens on key press (~0.17 s), so the orange mic dot only shows while dictating.
     # On: the mic stays open so recording starts instantly and the 0.3 s before the key press is kept,
-    # but macOS shows the orange dot the whole time Dictly runs.
+    # but macOS shows the orange dot the whole time Likho runs.
     "warm_mic": False,
     "paste_mode": "paste",  # "paste" (auto-paste into the focused app) or "copy" (clipboard only)
     "save_audio": False,  # keep a .wav of each dictation for playback in History (off = audio never touches disk)

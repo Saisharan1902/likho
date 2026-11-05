@@ -1,4 +1,4 @@
-"""Dictly: hold a key, talk, and the text appears wherever your cursor is.
+"""Likho: hold a key, talk, and the text appears wherever your cursor is.
 
 Threads:
   main (Qt)      pill animation, menu-bar icon
@@ -23,7 +23,7 @@ from . import llm, macos, overlay
 from .audio import Recorder
 from .config import Config
 from .db import DB
-from .pipeline import Pipeline
+from .pipeline import Pipeline, log
 from .ptt import PushToTalk
 from .server import DashboardServer
 from .transcriber import warm_up
@@ -32,7 +32,7 @@ from .window import DashboardWindow  # imports QtWebEngine, which must happen be
 IDLE_REWARM_SECONDS = 60  # idle longer than this → wake the speech model when you start talking
 
 
-class DictlyApp(QObject):
+class LikhoApp(QObject):
     status_changed = Signal(str)
     show_requested = Signal()  # from the dashboard server's thread → opens the window on the GUI thread
 
@@ -53,16 +53,17 @@ class DictlyApp(QObject):
         self.recorder = Recorder(on_level=self.pill.set_level, warm=self.cfg["warm_mic"])
         self.pipeline = Pipeline(self.cfg, self.db, on_state=self.pill.set_state, on_status=self.set_status)
         self.ptt = PushToTalk(self._start, self._finish, self._cancel,
-                              on_lock=lambda: self.pill.set_state(overlay.LOCKED))
+                              on_lock=self._lock)
         self.listener = macos.HotkeyListener(lambda: self.cfg["hotkey"], self.ptt.key_down, self.ptt.key_up,
                                              self.ptt.cancel)
         self._app_name = None
-        self._last_used = 0.0  # time.monotonic() of the last transcription (or warm-up)
+        self._last_used = 0.0
+        self._pressed = 0.0  # time.monotonic() of the last transcription (or warm-up)
 
         self.jobs = queue.Queue()
         threading.Thread(target=self._worker, daemon=True).start()
         self.show_requested.connect(self.open_dashboard)
-        self.server = DashboardServer(self.cfg, self.db, port=int(os.environ.get("DICTLY_PORT", 8765)),
+        self.server = DashboardServer(self.cfg, self.db, port=int(os.environ.get("LIKHO_PORT", 8765)),
                                       status=lambda: dict(self.status), on_show=self.show_requested.emit).start()
         self.cfg.on_change(self._settings_changed)
 
@@ -72,18 +73,18 @@ class DictlyApp(QObject):
         if not all(perms.values()):
             macos.request_permissions()
             missing = " and ".join(k.replace("_", " ").title() for k, ok in perms.items() if not ok)
-            self.set_status(error=f"Grant {missing} in System Settings → Privacy & Security, then restart Dictly")
+            self.set_status(error=f"Grant {missing} in System Settings → Privacy & Security, then restart Likho")
         self.listener.start()
         QTimer.singleShot(1500, self._check_listener)
         self._load_model()
         llm.prewarm(self.cfg.all())
-        if os.environ.pop("DICTLY_SHOW_DASHBOARD", None):  # opened by clicking Dictly (not at login)
+        if os.environ.pop("LIKHO_SHOW_DASHBOARD", None):  # opened by clicking Likho (not at login)
             QTimer.singleShot(0, self.open_dashboard)
-        print(f"Dictly is running. Dashboard: {self.server.url}")
+        print(f"Likho is running. Dashboard: {self.server.url}")
 
     def _check_listener(self):
         if self.listener.failed.is_set():
-            self.set_status(error="Can't see the hotkey: allow Input Monitoring for this app, then restart Dictly")
+            self.set_status(error="Can't see the hotkey: allow Input Monitoring for this app, then restart Likho")
             self.pill.set_state(overlay.ERROR)
 
     def _load_model(self):
@@ -120,6 +121,8 @@ class DictlyApp(QObject):
             # Wake it up now, while you're still talking; the real job queues right behind it.
             self.jobs.put(self._rewarm)
         self._app_name = macos.frontmost_app()
+        self._pressed = time.monotonic()
+        log(f"key down in {self._app_name!r}")
         self.pill.set_state(overlay.RECORDING)
         try:
             self.recorder.start()
@@ -128,8 +131,13 @@ class DictlyApp(QObject):
             self.pill.set_state(overlay.ERROR)
             self.ptt.state = self.ptt.IDLE
 
+    def _lock(self):
+        log("hands-free on (double-tap): tap again to finish")
+        self.pill.set_state(overlay.LOCKED)
+
     def _finish(self):
         released = time.monotonic()
+        log(f"finished after {released - self._pressed:.1f}s")
         self.pill.set_state(overlay.TRANSCRIBING)  # react instantly; the mic keeps going for the post-roll
         audio, app_name = self.recorder.stop(), self._app_name
         self.jobs.put(lambda: self._handle(audio, app_name, released))
@@ -146,6 +154,7 @@ class DictlyApp(QObject):
         self._last_used = time.monotonic()
 
     def _cancel(self):
+        log("cancelled (Esc, or a single short tap)")
         self.recorder.cancel()
         self.pill.set_state(overlay.IDLE)
 
@@ -179,15 +188,15 @@ def main():
     QTimer(qapp, interval=250, timeout=lambda: None).start()  # lets Ctrl+C through while Qt runs
     macos.hide_dock_icon()
     try:
-        app = DictlyApp(qapp)
+        app = LikhoApp(qapp)
     except OSError as e:
-        if e.errno == 48:  # address in use → Dictly is already running: opening it again shows the dashboard
-            print("Dictly is already running (the dashboard port is taken) — opening the dashboard.")
-            webbrowser.open(f"http://127.0.0.1:{os.environ.get('DICTLY_PORT', 8765)}")
+        if e.errno == 48:  # address in use → Likho is already running: opening it again shows the dashboard
+            print("Likho is already running (the dashboard port is taken) — opening the dashboard.")
+            webbrowser.open(f"http://127.0.0.1:{os.environ.get('LIKHO_PORT', 8765)}")
             sys.exit(0)
         raise
     app.run()
-    if os.environ.get("DICTLY_LAUNCHER"):
-        # Started by Dictly.app's launcher: if it's gone (e.g. force-quit), don't linger as an orphan.
+    if os.environ.get("LIKHO_LAUNCHER"):
+        # Started by Likho.app's launcher: if it's gone (e.g. force-quit), don't linger as an orphan.
         QTimer(qapp, interval=2000, timeout=lambda: os.getppid() == 1 and qapp.quit()).start()
     sys.exit(qapp.exec())

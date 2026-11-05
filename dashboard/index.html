@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dictly Dashboard</title>
+<title>Likho Dashboard</title>
 <style>
   :root {
     color-scheme: light;
@@ -119,7 +119,7 @@
         <rect x="10" y="12.3" width=".9" height="3.6" rx=".45" fill="#58a6ff"/>
         <rect x="11.4" y="13" width=".9" height="2.2" rx=".45" fill="#58a6ff"/>
       </svg>
-      Dictly
+      Likho
     </div>
     <div class="status"><span class="dot" id="sdot"></span><span id="stext">Connecting…</span></div>
     <nav>
@@ -207,7 +207,9 @@
             <div class="hint">Parakeet and “.en” models are English-only.</div></div>
           <div class="field"><label for="s-paste">Output</label>
             <select id="s-paste"><option value="paste">Paste into the focused app</option>
-              <option value="copy">Copy to clipboard only</option></select></div>
+              <option value="type">Type it (for apps that ignore paste)</option>
+              <option value="copy">Copy to clipboard only</option></select>
+            <div class="hint">Paste is fastest. ChatGPT / Codex are always typed into automatically.</div></div>
           <div class="field"><label for="s-wpm">Your typing speed (WPM)</label><input type="number" id="s-wpm" min="5" max="200">
             <div class="hint">Used for “time saved”.</div></div>
           <div class="field"><label class="switch"><input type="checkbox" id="s-audio">
@@ -216,7 +218,7 @@
               <a href="#" id="delaudio">Delete all saved recordings</a></div></div>
           <div class="field"><label class="switch"><input type="checkbox" id="s-warm">
             Keep microphone ready</label>
-            <div class="hint">Catches your first word instantly. macOS shows the orange mic dot while Dictly runs (audio is only kept while you hold the key).</div></div>
+            <div class="hint">Catches your first word instantly. macOS shows the orange mic dot while Likho runs (audio is only kept while you hold the key).</div></div>
         </div>
       </div>
       <div class="card form">
@@ -250,7 +252,7 @@
 <script>
 const $ = (s) => document.querySelector(s);
 const api = async (path, opts = {}) => {
-  const r = await fetch(path, { ...opts, headers: { "Content-Type": "application/json", "X-Dictly": "1" } });
+  const r = await fetch(path, { ...opts, headers: { "Content-Type": "application/json", "X-Likho": "1" } });
   const data = await r.json();
   if (!r.ok) throw new Error(data.error || r.statusText);
   return data;
@@ -264,7 +266,7 @@ let SETTINGS = null, DEFAULT_PROMPT = "";
 function show(tab) {
   document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   document.querySelectorAll("section").forEach((s) => s.classList.toggle("on", s.id === tab));
-  try { localStorage.setItem("dictly-tab", tab); } catch {}
+  try { localStorage.setItem("likho-tab", tab); } catch {}
   if (tab === "overview") loadStats();
   if (tab === "history") loadHistory(true);
 }
@@ -486,7 +488,7 @@ $("#testai").onclick = async () => {
 };
 
 // ---- boot ----
-window.refreshAll = () => {  // called by the Dictly window each time it's reopened
+window.refreshAll = () => {  // called by the Likho window each time it's reopened
   loadStatus(); loadSettings();
   const tab = document.querySelector("nav button.on")?.dataset.tab;
   if (tab === "overview") loadStats();
@@ -495,7 +497,7 @@ window.refreshAll = () => {  // called by the Dictly window each time it's reope
 loadStatus(); loadSettings();
 const TABS = ["overview", "history", "dictionary", "settings"];
 let start = location.hash.slice(1);
-if (!TABS.includes(start)) { try { start = localStorage.getItem("dictly-tab"); } catch {} }
+if (!TABS.includes(start)) { try { start = localStorage.getItem("likho-tab"); } catch {} }
 show(TABS.includes(start) ? start : "overview");
 setInterval(() => { loadStatus(); if ($("#overview").classList.contains("on")) loadStats(); }, 5000);
 window.addEventListener("resize", () => { if ($("#overview").classList.contains("on")) loadStats(); });

@@ -8,8 +8,8 @@ import wave
 import numpy as np
 import pytest
 
-from dictly.audio import save_wav
-from dictly.transcriber import apply_replacements, transcribe
+from likho.audio import save_wav
+from likho.transcriber import apply_replacements, transcribe
 
 TEST_MODEL = "mlx-community/whisper-base.en-mlx"
 

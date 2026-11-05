@@ -8,7 +8,7 @@ import pytest  # noqa: E402
 from PySide6.QtGui import QImage  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
-from dictly import overlay  # noqa: E402
+from likho import overlay  # noqa: E402
 
 
 @pytest.fixture(scope="module")

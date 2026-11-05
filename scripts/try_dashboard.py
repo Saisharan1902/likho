@@ -14,12 +14,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DEMO = len(sys.argv) > 1 and sys.argv[1] == "demo"
 if DEMO:
-    os.environ["DICTLY_DATA_DIR"] = str(ROOT / "data-demo")
+    os.environ["LIKHO_DATA_DIR"] = str(ROOT / "data-demo")
 sys.path.insert(0, str(ROOT))
 
-from dictly.config import Config  # noqa: E402
-from dictly.db import DB  # noqa: E402
-from dictly.server import DashboardServer  # noqa: E402
+from likho.config import Config  # noqa: E402
+from likho.db import DB  # noqa: E402
+from likho.server import DashboardServer  # noqa: E402
 
 cfg, db = Config(), DB()
 
@@ -52,7 +52,7 @@ if DEMO and db.history()["total"] == 0:
                 "replacements": [{"from": "my email", "to": "ada@example.com"}]})
     print("Seeded demo data into data-demo/")
 
-srv = DashboardServer(cfg, db, port=int(os.environ.get("DICTLY_PORT", 8765)), status=lambda: {"message": "Dashboard preview" + (" · demo data" if DEMO else "")}).start()
+srv = DashboardServer(cfg, db, port=int(os.environ.get("LIKHO_PORT", 8765)), status=lambda: {"message": "Dashboard preview" + (" · demo data" if DEMO else "")}).start()
 print(f"Dashboard: {srv.url}   (Ctrl+C to stop)")
 webbrowser.open(srv.url)
 try:

@@ -1,8 +1,8 @@
 """Section 1 — settings + history database."""
 from datetime import date, datetime, timedelta
 
-from dictly.config import Config
-from dictly.db import DB
+from likho.config import Config
+from likho.db import DB
 
 
 def test_config_defaults_and_persist(tmp_data):
@@ -68,7 +68,7 @@ def test_stats_empty(tmp_data):
 def test_old_database_gets_new_columns(tmp_data):
     import sqlite3
 
-    import dictly.db as dbmod
+    import likho.db as dbmod
     old = sqlite3.connect(dbmod.DB_PATH)  # a database created before ai_sec / total_sec existed
     old.executescript(dbmod.SCHEMA)
     old.execute("INSERT INTO transcriptions (created_at, raw_text, final_text, duration_sec, transcribe_sec, "

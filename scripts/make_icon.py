@@ -1,4 +1,4 @@
-"""Draws the Dictly app icon (1024×1024 PNG): a white "d" on a black tile, a small blue waveform in its bowl."""
+"""Draws the Likho app icon (1024×1024 PNG): a white "d" on a black tile, a small blue waveform in its bowl."""
 import os
 import sys
 

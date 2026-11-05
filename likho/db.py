@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 
 from .config import DATA_DIR
 
-DB_PATH = DATA_DIR / "dictly.db"
+DB_PATH = DATA_DIR / "likho.db"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS transcriptions (

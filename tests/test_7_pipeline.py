@@ -8,10 +8,10 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import numpy as np
 import pytest
 
-from dictly import overlay
-from dictly.config import Config
-from dictly.db import DB
-from dictly.pipeline import Pipeline
+from likho import overlay
+from likho.config import Config
+from likho.db import DB
+from likho.pipeline import Pipeline
 
 
 @pytest.fixture(scope="module")
@@ -111,3 +111,15 @@ def test_smart_mode_skips_ai_for_clean_dictation(pipe, speech, fake_ai):
     pipe.cfg.update({"ai_enabled": True, "ai_mode": "smart", "ai_provider": "custom", "ai_base_url": url})
     row = pipe.handle(speech)  # "Please send the report to my email by Friday." — nothing to fix
     assert calls == [] and row["ai_used"] == 0 and row["ai_sec"] is None
+
+
+def test_blocked_paste_warns_and_keeps_text(tmp_data, speech):
+    """Accessibility off: macOS drops the ⌘V, so the user must be told and the text kept on the clipboard."""
+    cfg = Config()
+    cfg.update({"model": "mlx-community/whisper-base.en-mlx"})
+    states, status = [], {}
+    p = Pipeline(cfg, DB(), output=lambda text, mode: False,
+                 on_state=states.append, on_status=lambda **kw: status.update(kw))
+    row = p.handle(speech)
+    assert row is not None and states[-1] == overlay.ERROR
+    assert "Accessibility" in status["error"] and "⌘V" in status["error"]

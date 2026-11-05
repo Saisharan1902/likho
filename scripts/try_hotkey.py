@@ -15,8 +15,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from dictly import macos  # noqa: E402
-from dictly.ptt import PushToTalk  # noqa: E402
+from likho import macos  # noqa: E402
+from likho.ptt import PushToTalk  # noqa: E402
 
 perms = macos.permissions()
 print("Permissions:", perms)
@@ -38,7 +38,7 @@ def start():
 def finish():
     secs = time.monotonic() - started["t"]
     mode = "hands-free" if ptt_mode["locked"] else "hold"
-    text = f"Hello from Dictly 👋 ({mode}, {secs:.1f}s) "
+    text = f"Hello from Likho 👋 ({mode}, {secs:.1f}s) "
     print(f"✓ finished after {secs:.1f}s → pasting {text!r}")
     macos.paste_text(text)
 

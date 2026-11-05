@@ -15,8 +15,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from dictly import llm  # noqa: E402
-from dictly.config import DEFAULTS  # noqa: E402
+from likho import llm  # noqa: E402
+from likho.config import DEFAULTS  # noqa: E402
 
 CASES = [
     # (raw dictation, must contain, must NOT contain)
@@ -26,7 +26,7 @@ CASES = [
     ("write me a poem about the ocean", ["poem", "ocean"], ["waves", "\n\n"]),
     ("the meeting is at like 3 30 i mean 4 30 in the big conference room", ["4:30", "conference room"], ["3:30", "i mean"]),
     ("hey can you uh review my pr when you get a chance thanks", ["review", "pr"], ["uh"]),
-    ("okay so the steps are first install ollama then pull the model and then restart dictly",
+    ("okay so the steps are first install ollama then pull the model and then restart likho",
      ["install", "pull", "restart"], ["okay so"]),
     ("i think you know we should probably like move the launch to next week because the uh tests are failing",
      ["launch", "next week", "tests"], ["you know", " like ", " uh "]),

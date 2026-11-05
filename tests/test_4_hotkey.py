@@ -6,8 +6,8 @@ Real key presses + pasting are checked by scripts/try_hotkey.py.
 import Quartz
 import pytest
 
-from dictly import macos
-from dictly.ptt import PushToTalk
+from likho import macos
+from likho.ptt import PushToTalk
 
 
 def _flags_event(keycode, flags):
@@ -159,8 +159,8 @@ def test_cancel(ptt):
 def test_clipboard_roundtrip():
     before = macos._clipboard_get()
     try:
-        macos.copy_to_clipboard("dictly clipboard test ✓")
-        assert macos._clipboard_get() == "dictly clipboard test ✓"
+        macos.copy_to_clipboard("likho clipboard test ✓")
+        assert macos._clipboard_get() == "likho clipboard test ✓"
     finally:
         if before is not None:
             macos.copy_to_clipboard(before)

@@ -9,8 +9,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from dictly.audio import SAMPLE_RATE, Recorder  # noqa: E402
-from dictly.transcriber import transcribe  # noqa: E402
+from likho.audio import SAMPLE_RATE, Recorder  # noqa: E402
+from likho.transcriber import transcribe  # noqa: E402
 
 MODELS = {"turbo": "mlx-community/whisper-large-v3-turbo",
           "small": "mlx-community/whisper-small.en-mlx",

@@ -101,42 +101,101 @@ def _clipboard_get():
     return AppKit.NSPasteboard.generalPasteboard().stringForType_(AppKit.NSPasteboardTypeString)
 
 
-def _clipboard_set(text):
+def _clipboard_set(text, transient=False):
+    """Returns the pasteboard's change count after writing, to detect if anyone changes it later."""
     pb = AppKit.NSPasteboard.generalPasteboard()
     pb.clearContents()
     pb.setString_forType_(text, AppKit.NSPasteboardTypeString)
+    if transient:  # clipboard managers (Raycast, Paste, Maccy…) skip entries marked like this
+        for kind in ("org.nspasteboard.TransientType", "org.nspasteboard.ConcealedType"):
+            pb.setString_forType_("", kind)
+    return pb.changeCount()
 
 
 def copy_to_clipboard(text):
     _clipboard_set(text)
 
 
-def paste_text(text, restore_clipboard=True):
-    """Put text on the clipboard, send Cmd+V to the focused app, then restore the old clipboard."""
-    previous = _clipboard_get() if restore_clipboard else None
-    _clipboard_set(text)
-    time.sleep(0.05)
+# Apps whose text boxes ignore a simulated ⌘V; Likho types into them instead.
+# Matched against the frontmost app's name (case-insensitive substring).
+TYPE_INSTEAD_OF_PASTE = ("chatgpt", "codex")
+_RETURN = 36
+
+
+def _post_key(keycode, flags=0):
     for down in (True, False):
-        ev = Quartz.CGEventCreateKeyboardEvent(None, _V, down)
-        Quartz.CGEventSetFlags(ev, Quartz.kCGEventFlagMaskCommand)
+        ev = Quartz.CGEventCreateKeyboardEvent(None, keycode, down)
+        Quartz.CGEventSetFlags(ev, flags)
         Quartz.CGEventPost(Quartz.kCGHIDEventTap, ev)
+
+
+def type_text(text):
+    """Type text as keyboard input (works where paste is ignored). Newlines are Shift+Return so a
+    spoken list doesn't press "Send" in chat apps."""
+    for i, line in enumerate(text.split("\n")):
+        if i:
+            _post_key(_RETURN, Quartz.kCGEventFlagMaskShift)
+        units = line.encode("utf-16-le")
+        for j in range(0, len(units), 40):  # 20 UTF-16 units per event (the API's limit)
+            chunk = units[j:j + 40].decode("utf-16-le", errors="ignore")
+            for down in (True, False):
+                ev = Quartz.CGEventCreateKeyboardEvent(None, 0, down)
+                Quartz.CGEventKeyboardSetUnicodeString(ev, len(chunk.encode("utf-16-le")) // 2, chunk)
+                Quartz.CGEventPost(Quartz.kCGHIDEventTap, ev)
+            time.sleep(0.004)
+
+
+def insert_text(text, method="paste", restore_clipboard=True) -> str:
+    """Put text into the focused app. method: "paste" (auto: types into apps that ignore paste),
+    "type", or "copy". Returns how it was inserted: "paste", "type", "copy", or "blocked"
+    (Accessibility off → text left on the clipboard for the user to ⌘V)."""
+    if method == "copy":
+        _clipboard_set(text)
+        return "copy"
+    if not _can_type():
+        _clipboard_set(text)
+        return "blocked"
+    app = (frontmost_app() or "").lower()
+    if method == "type" or any(name in app for name in TYPE_INSTEAD_OF_PASTE):
+        type_text(text)
+        return "type"
+    previous = _clipboard_get() if restore_clipboard else None
+    ours = _clipboard_set(text, transient=True)
+    time.sleep(0.05)
+    _post_key(_V, Quartz.kCGEventFlagMaskCommand)
     if previous is not None:
         def restore():
-            time.sleep(0.6)
-            _clipboard_set(previous)
+            # Some apps read the clipboard late; restoring too early pastes the *old* contents.
+            time.sleep(1.5)
+            if AppKit.NSPasteboard.generalPasteboard().changeCount() == ours:  # nobody copied since
+                _clipboard_set(previous)
         threading.Thread(target=restore, daemon=True).start()
+    return "paste"
+
+
+def paste_text(text, restore_clipboard=True) -> bool:
+    """Back-compat wrapper (used by scripts): True if the text was inserted."""
+    return insert_text(text, "paste", restore_clipboard) != "blocked"
+
+
+def _can_type() -> bool:
+    import ApplicationServices
+    return bool(ApplicationServices.AXIsProcessTrusted() or Quartz.CGPreflightPostEventAccess())
 
 
 def permissions() -> dict:
     """Input Monitoring is needed to see the hotkey; Accessibility to send Cmd+V."""
-    return {"input_monitoring": bool(Quartz.CGPreflightListenEventAccess()),
-            "accessibility": bool(Quartz.CGPreflightPostEventAccess())}
+    return {"input_monitoring": bool(Quartz.CGPreflightListenEventAccess()), "accessibility": _can_type()}
 
 
 def request_permissions():
-    """Shows the macOS prompts / adds this app to the lists in System Settings → Privacy & Security."""
+    """Shows the macOS prompts and adds this app to the lists in System Settings → Privacy & Security."""
+    import ApplicationServices
     Quartz.CGRequestListenEventAccess()
-    Quartz.CGRequestPostEventAccess()
+    if not _can_type():
+        # The official "would like to control this computer" dialog. It reliably creates the right
+        # Accessibility entry for *this* app; CGRequestPostEventAccess alone sometimes adds nothing.
+        ApplicationServices.AXIsProcessTrustedWithOptions({ApplicationServices.kAXTrustedCheckOptionPrompt: True})
 
 
 def make_overlay_window(widget):

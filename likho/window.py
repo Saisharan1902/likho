@@ -26,7 +26,7 @@ class DashboardWindow(QMainWindow):
     def __init__(self, url, icon: QIcon | None = None):
         super().__init__()
         self.url = url
-        self.setWindowTitle("Dictly")
+        self.setWindowTitle("Likho")
         if icon:
             self.setWindowIcon(icon)
         self.resize(1120, 820)
@@ -51,5 +51,5 @@ class DashboardWindow(QMainWindow):
             self.view.page().runJavaScript("window.refreshAll && refreshAll()")
         self.show()
         self.raise_()
-        macos.activate_app()  # Dictly has no Dock icon, so bring it forward explicitly
+        macos.activate_app()  # Likho has no Dock icon, so bring it forward explicitly
         self.activateWindow()

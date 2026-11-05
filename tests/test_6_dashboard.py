@@ -8,14 +8,14 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import numpy as np
 import pytest
 
-from dictly.audio import save_wav
-from dictly.config import Config
-from dictly.db import DB
+from likho.audio import save_wav
+from likho.config import Config
+from likho.db import DB
 
 
 @pytest.fixture
 def srv(tmp_data, monkeypatch):
-    import dictly.server as server
+    import likho.server as server
     monkeypatch.setattr(server, "AUDIO_DIR", tmp_data / "audio")
     cfg, db = Config(), DB()
     s = server.DashboardServer(cfg, db, port=0, status=lambda: {"message": "Ready"}).start()
@@ -24,7 +24,7 @@ def srv(tmp_data, monkeypatch):
 
 
 def call(srv, path, method="GET", body=None, headers=None):
-    h = {"Content-Type": "application/json", "X-Dictly": "1", **(headers or {})}
+    h = {"Content-Type": "application/json", "X-Likho": "1", **(headers or {})}
     req = urllib.request.Request(srv.url + path, method=method, headers=h,
                                  data=json.dumps(body).encode() if body is not None else None)
     try:
@@ -37,7 +37,7 @@ def call(srv, path, method="GET", body=None, headers=None):
 
 def test_page_and_status(srv):
     code, html = call(srv, "/")
-    assert code == 200 and b"Dictly Dashboard" in html
+    assert code == 200 and b"Likho Dashboard" in html
     assert call(srv, "/api/status") == (200, {"message": "Ready"})
 
 
@@ -101,7 +101,7 @@ def test_settings_roundtrip_hides_api_key(srv):
     assert srv.cfg["ai_api_key"] == "sk-secret"
 
 
-@pytest.mark.parametrize("bad", [{"hotkey": "space"}, {"save_audio": "yes"}, {"paste_mode": "type"}])
+@pytest.mark.parametrize("bad", [{"hotkey": "space"}, {"save_audio": "yes"}, {"paste_mode": "shout"}])
 def test_settings_validation(srv, bad):
     code, body = call(srv, "/api/settings", "POST", bad)
     assert code == 400 and body["error"]

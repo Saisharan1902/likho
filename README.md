@@ -1,10 +1,10 @@
 <p align="center"><img src="docs/assets/icon.png" width="96" alt=""></p>
-<h1 align="center">Dictly</h1>
+<h1 align="center">Likho</h1>
 <p align="center"><b>Private voice dictation for Mac.</b> Hold a key, talk, let go — clean text is typed in any app.<br>
 Speech recognition runs entirely on your Mac. Free and open source.</p>
-<p align="center"><a href="https://saisharan1902.github.io/dictly/">Website</a> · <a href="#install">Install</a> · <a href="#how-it-works">How it works</a></p>
+<p align="center"><a href="https://saisharan1902.github.io/likho/">Website</a> · <a href="#install">Install</a> · <a href="#how-it-works">How it works</a></p>
 
-<p align="center"><img src="docs/assets/dashboard-light.png" width="820" alt="Dictly dashboard"></p>
+<p align="center"><img src="docs/assets/dashboard-light.png" width="820" alt="Likho dashboard"></p>
 
 ## Features
 
@@ -21,9 +21,9 @@ Speech recognition runs entirely on your Mac. Free and open source.</p>
 Requirements: macOS 13+, Apple Silicon, Python 3.12 (`brew install python@3.12`), ~4 GB of disk for models.
 
 ```bash
-git clone https://github.com/Saisharan1902/dictly.git
-cd dictly
-./run.sh                 # creates .venv, installs dependencies, downloads the speech model, starts Dictly
+git clone https://github.com/Saisharan1902/likho.git
+cd likho
+./run.sh                 # creates .venv, installs dependencies, downloads the speech model, starts Likho
 ```
 
 Then allow your terminal app under **System Settings → Privacy & Security**: **Microphone**, **Input Monitoring** (to see the hotkey) and **Accessibility** (to type into other apps). Quit and restart it.
@@ -31,12 +31,12 @@ Then allow your terminal app under **System Settings → Privacy & Security**: *
 ### As a menu-bar app
 
 ```bash
-scripts/build_app.sh     # builds /Applications/Dictly.app
+scripts/build_app.sh     # builds /Applications/Likho.app
 ```
 
-Open **Dictly** from Spotlight. Grant *Dictly* the three permissions above, then quit and reopen it. Clicking the app opens the dashboard; it lives in the menu bar (no Dock icon). To start at login: System Settings → General → Login Items → **+** → Dictly.
+Open **Likho** from Spotlight. Grant *Likho* the three permissions above, then quit and reopen it. Clicking the app opens the dashboard; it lives in the menu bar (no Dock icon). To start at login: System Settings → General → Login Items → **+** → Likho.
 
-The app runs this folder's code, so changes apply on the next launch; rebuild only if you move the folder. Logs: `~/Library/Logs/Dictly.log`.
+The app runs this folder's code, so changes apply on the next launch; rebuild only if you move the folder. Logs: `~/Library/Logs/Likho.log`.
 
 ### Optional: local AI cleanup
 
@@ -62,7 +62,7 @@ The key can be changed to Fn, Right ⌘, Right ⌃ or Right ⇧ in Settings.
 
 **Smart** mode (default) only calls the AI when the transcript has something to fix — fillers, self-corrections, repeated words, a spoken list — because speech models already punctuate. **Always** mode cleans every dictation of 4+ words.
 
-If the AI is slow, down, or replies with something that isn't a cleanup (an answer, an essay), Dictly types your raw words instead.
+If the AI is slow, down, or replies with something that isn't a cleanup (an answer, an essay), Likho types your raw words instead.
 
 Local models on a MacBook Pro M4 (`scripts/bench_ai.py`, 10 tricky dictations):
 
@@ -84,19 +84,19 @@ overlay.py (pill + menu bar) ◀──────── state ─────�
 
 | File | Role |
 |---|---|
-| `dictly/config.py` | Settings (`data/settings.json`), live-updated by the dashboard |
-| `dictly/db.py` | History + stats (`data/dictly.db`) |
-| `dictly/audio.py` | Microphone capture, silence trimming, loudness normalisation |
-| `dictly/transcriber.py` | Parakeet / Whisper via MLX, dictionary correction, replacements |
-| `dictly/llm.py` | Optional AI cleanup: providers, prompt, reply guards |
-| `dictly/macos.py` | Global hotkey (Quartz event tap), paste, permissions, overlay window |
-| `dictly/ptt.py` | Hold / double-tap hands-free / cancel state machine |
-| `dictly/overlay.py` | Floating pill + menu-bar icon |
-| `dictly/window.py` | Dashboard window |
-| `dictly/server.py` | Dashboard API |
-| `dictly/pipeline.py` | Recording → text → typed → saved |
-| `dictly/app.py` | Wires it all together |
-| `scripts/launcher.m` | Native launcher for Dictly.app (so macOS permissions belong to Dictly) |
+| `likho/config.py` | Settings (`data/settings.json`), live-updated by the dashboard |
+| `likho/db.py` | History + stats (`data/likho.db`) |
+| `likho/audio.py` | Microphone capture, silence trimming, loudness normalisation |
+| `likho/transcriber.py` | Parakeet / Whisper via MLX, dictionary correction, replacements |
+| `likho/llm.py` | Optional AI cleanup: providers, prompt, reply guards |
+| `likho/macos.py` | Global hotkey (Quartz event tap), paste, permissions, overlay window |
+| `likho/ptt.py` | Hold / double-tap hands-free / cancel state machine |
+| `likho/overlay.py` | Floating pill + menu-bar icon |
+| `likho/window.py` | Dashboard window |
+| `likho/server.py` | Dashboard API |
+| `likho/pipeline.py` | Recording → text → typed → saved |
+| `likho/app.py` | Wires it all together |
+| `scripts/launcher.m` | Native launcher for Likho.app (so macOS permissions belong to Likho) |
 
 ## Development
 
@@ -110,8 +110,8 @@ overlay.py (pill + menu bar) ◀──────── state ─────�
 .venv/bin/python scripts/bench_ai.py              # AI cleanup models
 ```
 
-Your data lives in `data/` (git-ignored). `DICTLY_DATA_DIR` and `DICTLY_PORT` override the folder and dashboard port.
+Your data lives in `data/` (git-ignored). `LIKHO_DATA_DIR` and `LIKHO_PORT` override the folder and dashboard port.
 
 ## License
 
-[Apache License 2.0](LICENSE). The "Dictly" name and logo are not covered by the license — forks must use their own (see [NOTICE](NOTICE)).
+[Apache License 2.0](LICENSE). The "Likho" name and logo are not covered by the license — forks must use their own (see [NOTICE](NOTICE)).

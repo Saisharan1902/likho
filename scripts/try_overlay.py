@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from PySide6.QtCore import QTimer  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
-from dictly import macos, overlay  # noqa: E402
+from likho import macos, overlay  # noqa: E402
 
 app = QApplication(sys.argv)
 app.setQuitOnLastWindowClosed(False)
@@ -33,8 +33,8 @@ tray = overlay.make_tray(lambda: print("Open Dashboard clicked"),
                          lambda on: print("AI cleanup:", on), False, app.quit)
 
 if len(sys.argv) > 1 and sys.argv[1] == "live":
-    from dictly.audio import SAMPLE_RATE, Recorder
-    from dictly.ptt import PushToTalk
+    from likho.audio import SAMPLE_RATE, Recorder
+    from likho.ptt import PushToTalk
 
     t = {}
 
