@@ -1,12 +1,14 @@
-"""Draws the Likho app icon (1024×1024 PNG): sound bars that settle into a written line and a blue cursor
-(speak → write), on a black tile."""
+"""Draws the Likho app icon (1024×1024 PNG): sound bars flowing into a pen stroke, white on a black tile."""
 import os
 import sys
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QPointF, QRectF, Qt  # noqa: E402
-from PySide6.QtGui import QColor, QGuiApplication, QImage, QLinearGradient, QPainter, QPainterPath, QPen  # noqa: E402
+from PySide6.QtCore import QRectF, Qt  # noqa: E402
+from PySide6.QtGui import QColor, QGuiApplication, QImage, QLinearGradient, QPainter, QPainterPath  # noqa: E402
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from likho.overlay import MARK  # noqa: E402
 
 app = QGuiApplication([])
 S = 1024
@@ -24,20 +26,11 @@ g.setColorAt(0, QColor("#111111"))
 g.setColorAt(1, QColor("#2a2a2a"))
 p.fillPath(body, g)
 
-
-def bar(cx, h, w, color):
-    p.setPen(Qt.NoPen)
-    p.setBrush(QColor(color))
-    p.drawRoundedRect(QRectF(cx - w / 2, S / 2 - h / 2, w, h), w / 2, w / 2)
-
-
-# voice: four sound bars
-for x, h in zip((250, 320, 390, 460), (120, 260, 340, 190)):
-    bar(x, h, 48, "white")
-# …settling into a written line
-p.setPen(QPen(QColor("white"), 48, Qt.SolidLine, Qt.RoundCap))
-p.drawLine(QPointF(530, S / 2), QPointF(700, S / 2))
-# …and the text cursor
-bar(772, 230, 30, "#58a6ff")
+scale, cx, cy = 0.82, 465, 500  # centre of the mark's box
+p.setPen(Qt.NoPen)
+p.setBrush(QColor("white"))
+for x, y, w, h, r in MARK:
+    p.drawRoundedRect(QRectF((x - cx) * scale + S / 2, (y - cy) * scale + S / 2, w * scale, h * scale),
+                      r * scale, r * scale)
 p.end()
 img.save(sys.argv[1])

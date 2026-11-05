@@ -18,6 +18,12 @@ SIZES = {IDLE: (44, 8), RECORDING: (132, 34), LOCKED: (150, 34), TRANSCRIBING: (
 WIN_W, WIN_H = 220, 60
 BARS = 22
 
+MARK = [  # (x, y, w, h, radius) in a 630×620 box starting at (150, 190) — see docs/assets/mark.svg
+    (160, 510, 40, 160, 20), (250, 445, 40, 290, 20), (340, 395, 40, 390, 20),  # sound bars…
+    (430, 440, 40, 300, 20), (520, 505, 40, 170, 20),
+    (300, 200, 470, 140, 56), (630, 200, 140, 600, 56),                           # …and the pen stroke
+]
+
 BG = QColor(17, 17, 17, 235)
 BORDER = QColor(255, 255, 255, 46)
 INK = QColor(245, 245, 245)
@@ -141,13 +147,12 @@ def _tray_icon() -> QIcon:
     pm.fill(Qt.transparent)
     p = QPainter(pm)
     p.setRenderHint(QPainter.Antialiasing)
-    # the Likho mark: sound bars → a written line → a cursor (speak → write)
+    # the Likho mark: sound bars flowing into a pen stroke
     p.setPen(Qt.NoPen)
     p.setBrush(Qt.black)
-    for x, bh in zip((3.5, 7.5, 11.5, 15.5), (7, 15, 20, 11)):
-        p.drawRoundedRect(QRectF(x, 18 - bh / 2, 2.8, bh), 1.4, 1.4)
-    p.drawRoundedRect(QRectF(19.5, 16.6, 7, 2.8), 1.4, 1.4)
-    p.drawRoundedRect(QRectF(29.5, 11, 2.2, 14), 1.1, 1.1)
+    k = 30 / 630  # fit the 630-unit mark into ~30 px
+    for x, y, w, h, r in MARK:
+        p.drawRoundedRect(QRectF(3 + (x - 150) * k, 3 + (y - 190) * k, w * k, h * k), r * k, r * k)
     p.end()
     icon = QIcon(pm)
     icon.setIsMask(True)  # macOS tints it for light/dark menu bar

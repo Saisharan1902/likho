@@ -50,7 +50,9 @@
         backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); }
   nav .wrap { display: flex; align-items: center; height: 64px; gap: 28px; }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 17px; letter-spacing: -.01em; text-decoration: none; }
-  .brand img { width: 26px; height: 26px; border-radius: 7px; }
+  .brand .mark-svg { width: 26px; height: 26px; color: var(--ink); }
+  .brand .mark-svg.sm { width: 18px; height: 18px; }
+  .brand { font-weight: 700; font-size: 19px; letter-spacing: -.02em; }
   nav .links { margin-left: auto; display: flex; gap: 26px; align-items: center; font-size: 14px; }
   nav .links a { color: var(--ink-2); text-decoration: none; }
   nav .links a:hover { color: var(--ink); }
@@ -174,7 +176,17 @@
 
 <nav>
   <div class="wrap">
-    <a class="brand" href="#"><img src="assets/icon.png" alt="">Likho</a>
+    <a class="brand" href="#"><svg class="mark-svg" viewBox="150 190 630 620" aria-hidden="true">
+  <g fill="currentColor">
+    <rect x="160" y="510" width="40" height="160" rx="20"/>
+    <rect x="250" y="445" width="40" height="290" rx="20"/>
+    <rect x="340" y="395" width="40" height="390" rx="20"/>
+    <rect x="430" y="440" width="40" height="300" rx="20"/>
+    <rect x="520" y="505" width="40" height="170" rx="20"/>
+    <rect x="300" y="200" width="470" height="140" rx="56"/>
+    <rect x="630" y="200" width="140" height="600" rx="56"/>
+  </g>
+</svg>Likho</a>
     <div class="links">
       <a class="hide-sm" href="#features">Features</a>
       <a class="hide-sm" href="#roadmap">Roadmap</a>
@@ -331,7 +343,17 @@
 
 <footer>
   <div class="wrap">
-    <span class="brand" style="font-size:14px"><img src="assets/icon.png" alt="" style="width:20px;height:20px;border-radius:5px">Likho</span>
+    <span class="brand" style="font-size:14px"><svg class="mark-svg sm" viewBox="150 190 630 620" aria-hidden="true">
+  <g fill="currentColor">
+    <rect x="160" y="510" width="40" height="160" rx="20"/>
+    <rect x="250" y="445" width="40" height="290" rx="20"/>
+    <rect x="340" y="395" width="40" height="390" rx="20"/>
+    <rect x="430" y="440" width="40" height="300" rx="20"/>
+    <rect x="520" y="505" width="40" height="170" rx="20"/>
+    <rect x="300" y="200" width="470" height="140" rx="56"/>
+    <rect x="630" y="200" width="140" height="600" rx="56"/>
+  </g>
+</svg>Likho</span>
     <span class="fl">
       <a href="https://github.com/Saisharan1902/likho">GitHub</a>
       <a href="https://github.com/Saisharan1902/likho/issues">Issues</a>
