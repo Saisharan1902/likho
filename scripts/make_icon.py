@@ -1,4 +1,5 @@
-"""Draws the Likho app icon (1024×1024 PNG): a white "d" on a black tile, a small blue waveform in its bowl."""
+"""Draws the Likho app icon (1024×1024 PNG): sound bars that settle into a written line and a blue cursor
+(speak → write), on a black tile."""
 import os
 import sys
 
@@ -23,17 +24,20 @@ g.setColorAt(0, QColor("#111111"))
 g.setColorAt(1, QColor("#2a2a2a"))
 p.fillPath(body, g)
 
-# the "d": a ring (bowl) and a stem on its right
-p.setPen(QPen(QColor("white"), 92, Qt.SolidLine, Qt.RoundCap))
-p.setBrush(Qt.NoBrush)
-p.drawEllipse(QPointF(455, 600), 175, 175)
-p.drawLine(QPointF(676, 250), QPointF(676, 775))
 
-# waveform inside the bowl
-p.setPen(Qt.NoPen)
-p.setBrush(QColor("#58a6ff"))
-for i, h in enumerate([70, 150, 90]):
-    x = 405 + i * 50
-    p.drawRoundedRect(QRectF(x - 15, 600 - h / 2, 30, h), 15, 15)
+def bar(cx, h, w, color):
+    p.setPen(Qt.NoPen)
+    p.setBrush(QColor(color))
+    p.drawRoundedRect(QRectF(cx - w / 2, S / 2 - h / 2, w, h), w / 2, w / 2)
+
+
+# voice: four sound bars
+for x, h in zip((250, 320, 390, 460), (120, 260, 340, 190)):
+    bar(x, h, 48, "white")
+# …settling into a written line
+p.setPen(QPen(QColor("white"), 48, Qt.SolidLine, Qt.RoundCap))
+p.drawLine(QPointF(530, S / 2), QPointF(700, S / 2))
+# …and the text cursor
+bar(772, 230, 30, "#58a6ff")
 p.end()
 img.save(sys.argv[1])

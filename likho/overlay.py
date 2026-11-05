@@ -141,15 +141,13 @@ def _tray_icon() -> QIcon:
     pm.fill(Qt.transparent)
     p = QPainter(pm)
     p.setRenderHint(QPainter.Antialiasing)
-    # the Likho "d": ring + stem, with a tiny waveform in the bowl
-    p.setPen(QPen(Qt.black, 4.2, Qt.SolidLine, Qt.RoundCap))
-    p.setBrush(Qt.NoBrush)
-    p.drawEllipse(QRectF(5, 13, 19, 19))
-    p.drawLine(QRectF(26, 4, 0, 28).topLeft(), QRectF(26, 4, 0, 28).bottomLeft())
+    # the Likho mark: sound bars → a written line → a cursor (speak → write)
     p.setPen(Qt.NoPen)
     p.setBrush(Qt.black)
-    for i, bh in enumerate((4, 8, 5)):
-        p.drawRoundedRect(QRectF(10.5 + i * 3.3, 22.5 - bh / 2, 2, bh), 1, 1)
+    for x, bh in zip((3.5, 7.5, 11.5, 15.5), (7, 15, 20, 11)):
+        p.drawRoundedRect(QRectF(x, 18 - bh / 2, 2.8, bh), 1.4, 1.4)
+    p.drawRoundedRect(QRectF(19.5, 16.6, 7, 2.8), 1.4, 1.4)
+    p.drawRoundedRect(QRectF(29.5, 11, 2.2, 14), 1.1, 1.1)
     p.end()
     icon = QIcon(pm)
     icon.setIsMask(True)  # macOS tints it for light/dark menu bar
